@@ -112,6 +112,7 @@ def deleteSurvey(id_survey):
 @researcher_required
 @belong_researcher('survey')
 def exportSurvey(id_survey):
+    print "inside exportSurvey"
     '''http://stackoverflow.com/questions/14614756/how-can-i-generate-file-on-the-fly-and-delete-it-after-download
         http://stackoverflow.com/questions/13344538/how-to-clean-up-temporary-file-used-with-send-file/
     '''
@@ -545,6 +546,7 @@ def deleteQuestion(id_survey,id_section,id_question):
 def export_stats(id_survey):
     '''Export stats in csv
     '''
+    print "here"
 
     # survey = Survey.query.get(id_survey)
     # #ofile = tempfile.NamedTemporaryFile()
@@ -563,7 +565,7 @@ def export_stats(id_survey):
     # ofile.close()
     # flash ("Export stats")
     #return send_file(ofile, as_attachment=True, attachment_filename="stats_"+survey.title+'.csv')
-    if current_app.config.get('MODE_GAMES',False):
+    if not current_app.config.get('MODE_GAMES',False):
         from app.stats.write_stats_voluntarios import write_stats
         write_stats(id_survey)
     else:

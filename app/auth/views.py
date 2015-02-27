@@ -2,17 +2,27 @@ from app import app, db, lm, oid
 from flask import Blueprint, request, url_for, flash, redirect, abort, session, g
 from flask import render_template
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from forms import LoginFormOpenID, RegistrationForm, LoginFormEmail
+from forms import LoginFormOpenID, RegistrationForm, LoginFormEmail, RegistrationForm2
 from . import blueprint
 from ..models import User, ROLE_USER
 from flask.ext.babel import gettext
-
-
 
 @blueprint.route('/login', methods=['GET', 'POST'])
 @blueprint.route('/', methods=['GET', 'POST'])
 @oid.loginhandler
 def login():
+    form = LoginFormEmail()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is not None and user.verify_password(form.password.data):
+            login_user(user, form.remember_me.data)
+            return redirect(request.args.get('next') or url_for('main.index'))
+        flash(gettext('Invalid email or password.'))
+    return render_template('auth/loginEmail.html', form=form)
+
+
+@blueprint.route('/loginopenid', methods=['GET', 'POST'])
+def loginopenid():
     """
     login method for users.
 
@@ -30,20 +40,9 @@ def login():
         form = form,
         providers = app.config['OPENID_PROVIDERS'])
 
-@blueprint.route('/loginEmail', methods=['GET', 'POST'])
-def loginEmail():
-    form = LoginFormEmail()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user is not None and user.verify_password(form.password.data):
-            login_user(user, form.remember_me.data)
-            return redirect(request.args.get('next') or url_for('main.index'))
-        flash(gettext('Invalid email or password.'))
-    return render_template('auth/loginEmail.html', form=form)
-
 @blueprint.route('/register', methods=['GET', 'POST'])
 def register():
-    form = RegistrationForm()
+    form = RegistrationForm2()
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     password=form.email.data)
@@ -52,8 +51,8 @@ def register():
         # token = user.generate_confirmation_token()
         # send_email(user.email, 'Confirm Your Account',
         #            'auth/email/confirm', user=user, token=token)
-        flash(gettext('A password has been sent to you by email.'))
-        return redirect(url_for('auth.login'))
+        login_user(user, True)
+        return redirect(url_for('main.index'))
     return render_template('auth/register.html', form=form)
 
 @blueprint.route('/logout')

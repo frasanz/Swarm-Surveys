@@ -1,9 +1,11 @@
 from flask.ext.wtf import Form
 from flask.ext.babel import gettext
-from wtforms.validators import Required, Email, Length
+from wtforms.validators import Required, Email, Length, EqualTo
 from wtforms import TextField,StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Email
+from wtforms import ValidationError
 from validator import ValidateEmail, ValidateDNI
+from ..models import User
 
 
 class LoginFormOpenID(Form):
@@ -29,4 +31,12 @@ class DatesForm(Form):
     last_name = TextField(gettext('Last name'), validators = [Required()])
     dni = TextField(gettext('dni'), validators = [Required(),ValidateDNI()])
 
+class RegistrationForm2(Form):
+    email = StringField('Email', validators=[Required(), Length(1,64), Email()])
+    password = PasswordField('Password', validators=[Required(), EqualTo('password2', message='Los passwords deben coincidir.')])
+    password2 = PasswordField('Confirmar password', validators=[Required()])
+    submit = SubmitField('Registrar');
 
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError('Correo ya registrado.')

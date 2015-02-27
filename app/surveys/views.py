@@ -146,7 +146,7 @@ def logicSurvey(id_survey):
     section = stateSurvey.nextSection()
     if section is None:
         if stateSurvey.status & StateSurvey.FINISH_OK:
-            if current_app.config.get('MODE_GAMES',False):
+            if not current_app.config.get('MODE_GAMES',False):
                 run_part2_raffle(id_survey)
                 return check_feedback(id_survey)
             else:

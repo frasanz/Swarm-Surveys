@@ -10,7 +10,7 @@ from app import babel
 @blueprint.route('/')
 @blueprint.route('/index')
 def index():
-    f = open(basedir+"/app/static/index.re", "r")
+    f = open(basedir+"/app/static/index_nutri.re", "r")
     text =  f.read()
     f.close()
     return render_template('index.html', text = text)
